@@ -1,0 +1,77 @@
+name: Test "Get version"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - get-version/**
+      - .github/workflows/get-version-test.yml
+      - tests/get-version/**
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - get-version/**
+      - .github/workflows/get-version-test.yml
+      - tests/get-version/**
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    name: Run tests
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get branch
+        run: echo "BRANCH_NAME=${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" >>"${GITHUB_ENV}"
+
+      - name: Get version
+        id: get_version1
+        uses: ./get-version
+
+      - name: Expect version to be "0.0.0"
+        run: ./tests/get-version/test.sh
+        env:
+          EXPECTED_VERSION: "0.0.0"
+          OUTPUT_VERSION: ${{ steps.get_version1.outputs.version }}
+
+      - name: Set git tag to 1.4.2
+        run: git tag 1.4.2
+
+      - name: Get version
+        id: get_version3
+        uses: ./get-version
+
+      - name: Expect version to be "1.4.2"
+        run: ./tests/get-version/test.sh
+        env:
+          EXPECTED_VERSION: "1.4.2"
+          OUTPUT_VERSION: ${{ steps.get_version3.outputs.version }}
+
+      - name: Configure git user
+        run: |
+          git config --global user.email "github-actions@sjoedin.se"
+          git config --global user.name "GitHub Actions"
+
+      - name: Make a commit
+        run: |
+          echo "test" > file.txt
+          git add file.txt
+          git commit -m "test"
+
+      - name: Dont expect version to change on short lived branch
+        if: env.BRANCH != 'main'
+        run: ./tests/get-version/test.sh
+        env:
+          EXPECTED_VERSION: "1.4.2"
+          OUTPUT_VERSION: ${{ steps.get_version3.outputs.version }}
+
+      - name: Expect branch to be incremented on main
+        if: env.BRANCH == 'main'
+        run: ./tests/get-version/test.sh
+        env:
+          EXPECTED_VERSION: "1.4.3"
+          OUTPUT_VERSION: ${{ steps.get_version3.outputs.version }}
