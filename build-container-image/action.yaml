@@ -1,5 +1,9 @@
 name: Build container image
-description: Build and push container image with cache
+description: |
+  Build and push container image with cache.
+
+  Required permissions:
+    - packages: write
 inputs:
   image:
     description: The image name
