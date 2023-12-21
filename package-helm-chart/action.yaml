@@ -1,5 +1,9 @@
 name: Package helm chart
-description: Package and push helm chart
+description: |
+  Package and push helm chart
+
+  Required permissions:
+    - packages: write
 inputs:
   chart:
     description: "The path to the helm chart"

@@ -1,5 +1,9 @@
-name: Set semantic version
-description: Setting semantic version and automatically incrementing the patch version on main
+name: Set version
+description: |
+  Attached a tag to the current commit and pushes it
+
+  Required permissions:
+    - contents: write
 inputs:
   version:
     description: "The version"
