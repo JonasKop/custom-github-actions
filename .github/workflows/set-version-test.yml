@@ -1,0 +1,47 @@
+name: Test "Set version"
+
+on:
+  push:
+    paths:
+      - set-version/**
+      - tests/set-version/**
+      - .github/workflows/set-version-test.yml
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    name: Run tests
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set version
+        uses: ./set-version
+        with:
+          version: "1.2.3-${{ github.run_id }}"
+
+  verify:
+    runs-on: ubuntu-22.04
+    name: Verify tests
+    permissions:
+      contents: write
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if set-version worked
+        run: ./tests/set-version/test.sh
+        env:
+          VERSION: 1.2.3-${{ github.run_id }}
+
+      - name: Delete tag
+        run: git push --delete origin $VERSION
+        env:
+          VERSION: 1.2.3-${{ github.run_id }}

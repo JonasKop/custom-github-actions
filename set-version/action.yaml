@@ -1,0 +1,19 @@
+name: Set semantic version
+description: Setting semantic version and automatically incrementing the patch version on main
+inputs:
+  version:
+    description: "The version"
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Push the new version tag
+      shell: bash
+      run: |
+        set -e
+        git config --global user.email "github-actions@sjoedin.se"
+        git config --global user.name "GitHub Actions"
+        git tag "${VERSION}"
+        git push --tags
+      env:
+        VERSION: ${{ inputs.version }}
