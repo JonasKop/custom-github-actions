@@ -9,13 +9,13 @@ fi
 
 if [ "$BRANCH_NAME" == "main" ]; then
   if [ "$VERSION" != "${EXPECTED_VERSION}" ]; then
-    echo "ERROR: Expected version to be '0.0.0', but it was $VERSION"
+    echo "ERROR: Expected version to be $EXPECTED_VERSION, but it was $VERSION"
     exit 1
   fi
 else
   expectedVersion="${expectedVersion}-*"
   if [[ $VERSION != ${EXPECTED_VERSION}-* ]]; then
-    echo "ERROR: Expected version to be '0.0.0-<HASH>', but it was $VERSION"
+    echo "ERROR: Expected version to be $EXPECTED_VERSION, but it was $VERSION"
     exit 1
   fi
 fi
