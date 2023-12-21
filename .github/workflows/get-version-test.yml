@@ -2,8 +2,6 @@ name: Test "Get version"
 
 on:
   push:
-    branches:
-      - main
     paths:
       - get-version/**
       - .github/workflows/get-version-test.yml

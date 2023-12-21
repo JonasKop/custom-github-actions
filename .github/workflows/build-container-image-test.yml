@@ -2,18 +2,10 @@ name: Test "Build container image"
 
 on:
   push:
-    branches:
-      - main
     paths:
       - build-container-image/**
       - .github/workflows/build-container-image-test.yml
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - build-container-image/**
-      - .github/workflows/build-container-image-test.yml
 
 jobs:
   test:
