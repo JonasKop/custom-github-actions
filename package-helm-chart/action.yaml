@@ -47,7 +47,7 @@ runs:
       shell: bash
       run: |
         set -e
-        wget https://github.com/stackrox/kube-linter/releases/download/v0.6.5/kube-linter-linux -O /usr/local/bin/kube-linter
+        wget -q https://github.com/stackrox/kube-linter/releases/download/v0.6.5/kube-linter-linux -O /usr/local/bin/kube-linter
         chmod +x /usr/local/bin/kube-linter
         kube-linter lint <(helm template ${{ inputs.chart }})
 
