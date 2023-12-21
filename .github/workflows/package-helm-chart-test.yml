@@ -1,0 +1,68 @@
+name: Test "Package helm chart"
+
+on:
+  push:
+    paths:
+      - package-helm-chart/**
+      - .github/workflows/package-helm-chart-test.yml
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    name: Run tests
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create helm chart
+        run: helm create package-helm-chart-test
+
+      - name: Package chart manually
+        run: |
+          helm package \
+            --app-version ${{ github.run_id }} \
+            --version ${{ github.run_id }} \
+            package-helm-chart-test
+
+          mv package-helm-chart-test-${{ github.run_id }}.tgz chart.tgz
+
+      - name: Package and push helm chart
+        uses: ./package-helm-chart
+        with:
+          chart: package-helm-chart-test
+          version: ${{ github.run_id }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          linter: false
+
+      - name: Verify that the test was successful
+        run: |
+          set -e
+          localManifest=$(helm template chart.tgz)
+          remoteManifest=$(helm template oci://ghcr.io/jonaskop/helm/package-helm-chart-test --version ${{ github.run_id }})
+
+          if [ "$localManifest" != "$remoteManifest" ]; then
+            echo "ERROR: The manifests are mismatching"
+            exit 1
+          fi
+
+      - name: Delete helm chart
+        run: |
+          set -e
+          imageTags=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /users/$GITHUB_REPOSITORY_OWNER/packages/container/helm%2fpackage-helm-chart-test/versions)
+
+          id=$(echo "$imageTags" | yq '.[] | select(.metadata.container.tags.[] == strenv(VERSION)) | .id')
+
+          gh api \
+            --method DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /users/$GITHUB_REPOSITORY_OWNER/packages/container/helm%2fpackage-helm-chart-test/versions/$id
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ github.run_id }}

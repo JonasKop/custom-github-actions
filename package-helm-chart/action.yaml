@@ -1,0 +1,59 @@
+name: Package helm chart
+description: Package and push helm chart
+inputs:
+  chart:
+    description: "The path to the helm chart"
+    required: true
+  version:
+    description: "The version of the helm chart"
+    required: true
+  linter:
+    description: "True if the helm chart should be linted"
+    default: "true"
+    required: false
+  github_token:
+    description: "Github token"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Login to helm repository
+      shell: bash
+      run: |
+        echo $GITHUB_TOKEN | helm registry \
+          login ghcr.io \
+          --username ${{ github.actor }} \
+          --password-stdin
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+
+    - name: Package helm chart home-assistant
+      shell: bash
+      run: |
+        set -e
+        helm dependency build ${{ inputs.chart }}
+        helm package \
+          --app-version ${{ inputs.version }} \
+          --version ${{ inputs.version }} \
+          ${{ inputs.chart }}
+
+    - name: Lint helm chart
+      if: inputs.linter == 'true'
+      shell: bash
+      run: |
+        set -e
+        wget https://github.com/stackrox/kube-linter/releases/download/v0.6.5/kube-linter-linux -O /usr/local/bin/kube-linter
+        chmod +x /usr/local/bin/kube-linter
+        kube-linter lint <(helm template ${{ inputs.chart }})
+
+    - name: Get repository owner
+      shell: bash
+      run: echo "REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "${GITHUB_ENV}"
+
+    - name: Push helm chart
+      shell: bash
+      run: |
+        set -e
+        chartName=$(basename ${{ inputs.chart }})
+        helm push $chartName-${{ inputs.version }}.tgz oci://ghcr.io/$REPOSITORY_OWNER/helm
