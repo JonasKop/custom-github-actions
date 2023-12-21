@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ "$VERSION" != "$OUTPUT_VERSION" ]; then
   echo "ERROR: Expected env var version '$VERSION' to be the same as output variable '$OUTPUT_VERSION'"
   exit 1
