@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 commitTags=$(git tag --points-at HEAD)
 if [ -z "$commitTags" ]; then
   echo "ERROR: No tags exists on this commit."
