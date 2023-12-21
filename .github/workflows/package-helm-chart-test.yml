@@ -6,10 +6,6 @@ on:
       - package-helm-chart/**
       - .github/workflows/package-helm-chart-test.yml
   workflow_dispatch:
-  pull_request:
-    paths:
-      - package-helm-chart/**
-      - .github/workflows/package-helm-chart-test.yml
 
 jobs:
   test:

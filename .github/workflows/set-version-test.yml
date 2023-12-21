@@ -8,6 +8,8 @@ on:
       - .github/workflows/set-version-test.yml
   workflow_dispatch:
   pull_request:
+    branches:
+      - main
     paths:
       - set-version/**
       - tests/set-version/**
