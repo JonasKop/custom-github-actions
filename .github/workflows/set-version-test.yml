@@ -8,6 +8,10 @@ on:
       - .github/workflows/set-version-test.yml
   workflow_dispatch:
   pull_request:
+    paths:
+      - set-version/**
+      - tests/set-version/**
+      - .github/workflows/set-version-test.yml
 
 jobs:
   test:
