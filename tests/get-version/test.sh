@@ -7,17 +7,12 @@ if [ "$VERSION" != "$OUTPUT_VERSION" ]; then
   exit 1
 fi
 
-if [ "$BRANCH_NAME" == "main" ]; then
-  if [ "$VERSION" != "${EXPECTED_VERSION}" ]; then
-    echo "ERROR: Expected version to be $EXPECTED_VERSION, but it was $VERSION"
-    exit 1
-  fi
-else
-  expectedVersion="${expectedVersion}-*"
-  if [[ $VERSION != ${EXPECTED_VERSION}-* ]]; then
-    echo "ERROR: Expected version to be $EXPECTED_VERSION, but it was $VERSION"
-    exit 1
-  fi
+if [[ "$BRANCH_NAME" == "main" && "$VERSION" != "${EXPECTED_VERSION}" ]]; then
+  echo "ERROR: Expected version to be '$EXPECTED_VERSION', but it was '$VERSION'"
+  exit 1
+elif [[ $VERSION != ${EXPECTED_VERSION}-* ]]; then
+  echo "ERROR: Expected version to be '$EXPECTED_VERSION', but it was '$VERSION'"
+  exit 1
 fi
 
 echo "Tests completed, success!"
