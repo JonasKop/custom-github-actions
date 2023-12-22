@@ -29,13 +29,18 @@ runs:
           major=${version_parts[0]}
           minor=${version_parts[1]}
           patch=${version_parts[2]}
+          echo "Latest version is $latest_version"
 
           # If on main, increment the patch version
-          if [ "${branch}" == "main" ]; then
+          current_commit_tag=$(git describe --tags --exact-match HEAD || :)
+          if [ "${current_commit_tag}" == "${latest_version}" ]; then
+            echo "This commit is already tagged with ${latest_version}, skipping increment..."
+          elif [ "${branch}" == "main"]; then
             patch=$((patch + 1))
           fi
 
           version="${major}.${minor}.${patch}"
+          echo "Version is now $version"
         fi
 
         # If not on main, add a hash suffix

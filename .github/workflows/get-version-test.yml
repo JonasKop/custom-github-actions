@@ -30,7 +30,7 @@ jobs:
         id: get_version1
         uses: ./get-version
 
-      - name: Expect version to be "0.0.0"
+      - name: Expect version to be "0.0.0" in an empty repository
         run: ./tests/get-version/test.sh
         env:
           EXPECTED_VERSION: "0.0.0"
