@@ -17,7 +17,7 @@ runs:
         set -e
         git config --global user.email "github-actions@sjoedin.se"
         git config --global user.name "GitHub Actions"
-        git tag "${VERSION}"
+        git tag "${VERSION}" -m "Version ${VERSION}"
         git push --tags
       env:
         VERSION: ${{ inputs.version }}
