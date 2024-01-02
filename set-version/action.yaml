@@ -15,9 +15,17 @@ runs:
       shell: bash
       run: |
         set -e
-        git config --global user.email "github-actions@sjoedin.se"
-        git config --global user.name "GitHub Actions"
-        git tag "${VERSION}" -m "Version ${VERSION}"
-        git push --tags
+
+        tagExists=$(git ls-remote origin "refs/tags/${VERSION}")
+
+        if [ -z "$tagExists" ]; then
+          echo "Pushing tag $VERSION"
+          git config --global user.email "github-actions@sjoedin.se"
+          git config --global user.name "GitHub Actions"
+          git tag "${VERSION}" -m "Version ${VERSION}"
+          git push --tags
+        else
+          echo "Tag $VERSION already exists, not pushing"
+        fi
       env:
         VERSION: ${{ inputs.version }}
