@@ -40,14 +40,14 @@ jobs:
         run: git tag 1.4.2
 
       - name: Get version
-        id: get_version3
+        id: get_version2
         uses: ./get-version
 
       - name: Expect version to be "1.4.2"
         run: ./tests/get-version/test.sh
         env:
           EXPECTED_VERSION: "1.4.2"
-          OUTPUT_VERSION: ${{ steps.get_version3.outputs.version }}
+          OUTPUT_VERSION: ${{ steps.get_version2.outputs.version }}
 
       - name: Configure git user
         run: |
@@ -60,15 +60,19 @@ jobs:
           git add file.txt
           git commit -m "test"
 
+      - name: Get version
+        id: get_version3
+        uses: ./get-version
+
       - name: Dont expect version to change on short lived branch
-        if: env.BRANCH != 'main'
+        if: env.BRANCH_NAME != 'main'
         run: ./tests/get-version/test.sh
         env:
           EXPECTED_VERSION: "1.4.2"
           OUTPUT_VERSION: ${{ steps.get_version3.outputs.version }}
 
       - name: Expect branch to be incremented on main
-        if: env.BRANCH == 'main'
+        if: env.BRANCH_NAME == 'main'
         run: ./tests/get-version/test.sh
         env:
           EXPECTED_VERSION: "1.4.3"
