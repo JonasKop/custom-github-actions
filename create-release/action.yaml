@@ -1,0 +1,38 @@
+name: Create release
+description: |
+  Creates a release for a given tag
+
+  Required permissions:
+    - contents: write
+inputs:
+  images:
+    description: "Container images (space separated)"
+    required: true
+  charts:
+    description: "Helm charts (space separated)"
+    required: true
+  version:
+    description: "Version to create release for (default github.ref tag)"
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Generate changelog
+      shell: bash
+      run: $GITHUB_ACTION_PATH/generate-changelog.py
+      env:
+        CONTAINER_IMAGES: ${{ inputs.images }}
+        HELM_CHARTS: ${{ inputs.charts }}
+        VERSION: ${{ inputs.version }}
+        CHANGELOG_FILE: ${{ github.workspace }}-CHANGELOG.txt
+
+    - name: printstuff
+      run: cat ${{ github.workspace }}-CHANGELOG.txt
+      shell: bash
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: ${{ github.workspace }}-CHANGELOG.txt
+        name: ${{ env.RELEASE_VERSION }}
+        tag_name: ${{ env.RELEASE_VERSION }}
