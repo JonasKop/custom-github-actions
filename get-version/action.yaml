@@ -1,5 +1,9 @@
 name: Get version
-description: Setting version and automatically incrementing the patch version on main
+description: |
+  Setting version and automatically incrementing the patch version on main
+
+  Required permissions:
+    - contents: read
 outputs:
   version:
     description: The version
@@ -31,15 +35,40 @@ runs:
           patch=${version_parts[2]}
           echo "Latest version is $latest_version"
 
-          # If on main, increment the patch version
+          newMajor="$major"
+          newMinor="$minor"
+          newPatch="$patch"
+
+          # If on main, increment the minor version
           current_commit_tag=$(git describe --tags --exact-match HEAD || :)
           if [ "${current_commit_tag}" == "${latest_version}" ]; then
-            echo "This commit is already tagged with ${latest_version}, skipping increment..."
-          elif [ "${branch}" == "main"]; then
-            patch=$((patch + 1))
+            echo "This commit is already tagged with ${latest_version}, skipping increment"
+          elif [ "${branch}" == "main" ]; then
+            # By default, increment the minor and set patch to 0
+            newMinor=$((minor + 1))
+            newPatch=0
+
+            # Get latest commit message and check if it ends with something like (#123)
+            commitMessage=$(git log -1 --pretty=%B)
+            if [[ "$commitMessage" =~ .*\(\#[0-9]+\) ]]; then
+              echo "The commit originated from a PR, checking if it was a bug..."
+
+              # Get PR number from commit message
+              export PR_NUMBER=$(echo "$commitMessage" | sed 's/^.*#//' | sed 's/).*$//')
+
+              # Check if the PR has a bug label
+              prIsBug=$(gh pr list --state all --json number,labels | yq '.[] | select(.number == env(PR_NUMBER)) | .labels | any_c(.name == "bug")')
+              if [ "$prIsBug" == "true" ]; then
+                echo "The commit is a bugix, incrementing patch"
+
+                # Increment patch
+                newMinor="$minor"
+                newPatch=$((patch + 1))
+              fi
+            fi
           fi
 
-          version="${major}.${minor}.${patch}"
+          version="${newMajor}.${newMinor}.${newPatch}"
           echo "Version is now $version"
         fi
 
@@ -54,3 +83,5 @@ runs:
         # Set variables
         echo "VERSION=$version" >>"${GITHUB_ENV}"
         echo "version=$version" >>"${GITHUB_OUTPUT}"
+      env:
+        GH_TOKEN: ${{ github.token }}
