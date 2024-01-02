@@ -31,6 +31,11 @@ jobs:
         with:
           version: "1.2.3-${{ github.run_id }}"
 
+      - name: Check if set-version can handle not pushing already existing tags
+        uses: ./set-version
+        with:
+          version: "1.2.3-${{ github.run_id }}"
+
   verify:
     runs-on: ubuntu-22.04
     name: Verify tests
