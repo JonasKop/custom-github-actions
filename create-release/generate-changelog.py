@@ -17,14 +17,25 @@ if not version:
     )
 
 # Get all previous tags preceeding this commit
-previousCommit = subprocess.check_output(
-    ["git", "rev-list", version, "--skip=1", "--max-count=1"]
-).decode("utf-8")
+previousCommit = (
+    subprocess.check_output(["git", "rev-list", version, "--skip=1", "--max-count=1"])
+    .decode("utf-8")
+    .strip()
+)
+
+# Get previous version
+previousVersion = (
+    subprocess.check_output(
+        ["git", "describe", "--abbrev=0", "--tags", "--always", previousCommit]
+    )
+    .decode("utf-8")
+    .strip()
+)
 
 try:
-    # Get previous version
-    previousVersion = subprocess.check_output(
-        ["git", "describe", "--abbrev=0", "--tags", previousCommit]
+    # Check if tag exists
+    subprocess.check_output(
+        ["git", "rev-parse", "-q", "--verify", f"refs/tags/{previousVersion}"]
     )
     commitInterval = f"{previousVersion}..{version}"
 except subprocess.CalledProcessError as e:
