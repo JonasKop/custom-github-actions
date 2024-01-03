@@ -37,11 +37,14 @@ jobs:
         env:
           VERSION: "4.5.6-${{ github.run_id }}"
 
-      - name: Generate Changelog
+      - name: Create release
         uses: ./create-release
         with:
           images: "test-image1 test-image2"
           charts: "test-chart1 test-chart2"
+
+      - name: Sleep 5s
+        run: sleep 5
 
       - name: Check if release exists
         run: |
