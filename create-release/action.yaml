@@ -14,6 +14,9 @@ inputs:
   version:
     description: "Version to create release for (default github.ref tag)"
     default: ""
+  files:
+    description: "Which files to include in the release"
+    default: ""
 runs:
   using: composite
   steps:
@@ -36,3 +39,4 @@ runs:
         body_path: ${{ github.workspace }}-CHANGELOG.txt
         name: ${{ env.RELEASE_VERSION }}
         tag_name: ${{ env.RELEASE_VERSION }}
+        files: ${{ inputs.files }}
