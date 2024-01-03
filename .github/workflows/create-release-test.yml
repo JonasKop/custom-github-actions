@@ -1,0 +1,80 @@
+name: Test "Create release"
+
+on:
+  push:
+    paths:
+      - create-release/**
+      - .github/workflows/create-release-test.yml
+      - tests/create-release/**
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    name: Run tests
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get repository owner
+        shell: bash
+        run: echo "REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "${GITHUB_ENV}"
+
+      - name: Configure git user
+        run: |
+          git config --global user.email "github-actions@sjoedin.se"
+          git config --global user.name "GitHub Actions"
+
+      - name: Make a commit
+        run: |
+          echo "test" > file.txt
+          git add file.txt
+          git commit -m "commit 1"
+          git tag "$VERSION" -m wip
+          git push --tags
+        env:
+          VERSION: "4.5.6-${{ github.run_id }}"
+
+      - name: Generate Changelog
+        uses: ./create-release
+        with:
+          images: "test-image1 test-image2"
+          charts: "test-chart1 test-chart2"
+
+      - name: Check if release exists
+        run: |
+          set -e
+          release=$(gh api \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              /repos/$GITHUB_REPOSITORY/releases | yq '.[] | select(.tag_name == strenv(VERSION))')
+
+          if [ -z "$release" ]; then
+              echo "ERROR: release does not exist"
+              exit 1
+          fi
+
+          echo "RELEASE_ID=$(echo "$release" | yq .id)" >>"${GITHUB_ENV}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: "4.5.6-${{ github.run_id }}"
+
+      - name: Delete "4.5.6-${{ github.run_id }}" release
+        if: always()
+        run: |
+          set -eax
+          gh api \
+            --method DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Delete tag
+        run: git push --delete origin $VERSION
+        if: always()
+        env:
+          VERSION: "4.5.6-${{ github.run_id }}"
