@@ -1,0 +1,37 @@
+name: Terraform plan
+description: Sets up terraform, validates configuration and runs terraform plan
+inputs:
+  terraform-cloud-token:
+    description: "A token to terraform cloud"
+    default: ""
+  working-directory:
+    description: "The working-directory where to run terraform"
+    default: "./"
+
+runs:
+  using: composite
+  steps:
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.6.6"
+        cli_config_credentials_token: ${{ inputs.terraform-cloud-token }}
+
+    - name: Terraform init
+      shell: bash
+      run: terraform init
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Terraform validate
+      shell: bash
+      run: terraform validate
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Terraform fmt
+      shell: bash
+      run: terraform fmt -check
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Terraform plan
+      shell: bash
+      run: terraform plan
+      working-directory: ${{ inputs.working-directory }}

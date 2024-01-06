@@ -1,0 +1,43 @@
+name: Test "Terraform plan"
+
+on:
+  push:
+    paths:
+      - terraform-plan/**
+      - .github/workflows/terraform-plan-test.yml
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    name: Terraform plan
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create terraform configuration
+        shell: bash
+        run: |
+          mkdir tfexample
+
+          cat <<EOF > tfexample/terraform.tf
+          terraform {
+            required_providers {
+              random = {
+                source  = "hashicorp/random"
+                version = "3.6.0"
+              }
+            }
+          }
+
+          resource "random_password" "password" {
+            length  = 16
+            special = true
+          }
+          EOF
+
+      - name: Terraform plan
+        uses: ./terraform-plan
+        with:
+          working-directory: tfexample
+

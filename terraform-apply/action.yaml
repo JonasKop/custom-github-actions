@@ -1,0 +1,27 @@
+name: Terraform apply
+description: Sets up terraform and runs terraform apply
+inputs:
+  terraform-cloud-token:
+    description: "A token to terraform cloud"
+    default: ""
+  working-directory:
+    description: "The working-directory where to run terraform"
+    default: "./"
+
+runs:
+  using: composite
+  steps:
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.6.6"
+        cli_config_credentials_token: ${{ inputs.terraformCloudToken }}
+
+    - name: Terraform init
+      shell: bash
+      run: terraform init
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Terraform apply
+      shell: bash
+      run: terraform apply --auto-approve
+      working-directory: ${{ inputs.working-directory }}
