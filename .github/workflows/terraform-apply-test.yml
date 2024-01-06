@@ -3,7 +3,7 @@ name: Test "Terraform apply"
 on:
   push:
     paths:
-      - terraform-plan/**
+      - terraform-apply/**
       - .github/workflows/terraform-apply-test.yml
   workflow_dispatch:
 jobs:
