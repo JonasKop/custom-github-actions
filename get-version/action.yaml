@@ -15,7 +15,7 @@ runs:
       name: Get version
       shell: bash
       run: |
-        set -e
+        set -eax
 
         # Get PR source branch if exists, otherwise use current branch
         branch=${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}
@@ -43,7 +43,7 @@ runs:
           current_commit_tag=$(git describe --tags --exact-match HEAD || :)
           if [ "${current_commit_tag}" == "${latest_version}" ]; then
             echo "This commit is already tagged with ${latest_version}, skipping increment"
-          elif [ "${branch}" == "main" ]; then
+          elif [ "${branch}" == "15-patch-version-not-incrementing-correctly" ]; then
             # By default, increment the minor and set patch to 0
             newMinor=$((minor + 1))
             newPatch=0
@@ -73,7 +73,7 @@ runs:
         fi
 
         # If not on main, add a hash suffix
-        if [ "${branch}" != "main" ]; then
+        if [ "${branch}" != "15-patch-version-not-incrementing-correctly" ]; then
           hash_suffix=$(git rev-parse --short=8 HEAD)
           version="${version}-${hash_suffix}"
         fi
